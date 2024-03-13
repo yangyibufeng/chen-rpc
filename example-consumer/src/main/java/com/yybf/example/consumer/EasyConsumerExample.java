@@ -1,5 +1,6 @@
 package com.yybf.example.consumer;
 
+import com.yybf.chenrpc.proxy.ServiceProxyFactory;
 import com.yybf.example.common.model.User;
 import com.yybf.example.common.service.UserService;
 
@@ -12,7 +13,10 @@ import com.yybf.example.common.service.UserService;
 public class EasyConsumerExample {
     public static void main(String[] args) {
         // todo 需要获取UserService的实现类对象
-        UserService userService = null;
+        // 调用静态代理
+//        UserService userService = new UserServiceProxy();
+        // 调用动态代理
+        UserService userService = ServiceProxyFactory.getProxy(UserService.class);
         User user = new User();
         user.setName("yybf");
         // 调用
