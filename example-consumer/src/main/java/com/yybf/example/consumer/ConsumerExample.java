@@ -1,6 +1,5 @@
 package com.yybf.example.consumer;
 
-import cn.hutool.core.collection.SpliteratorUtil;
 import com.yybf.chenrpc.config.RpcConfig;
 import com.yybf.chenrpc.proxy.ServiceProxyFactory;
 import com.yybf.chenrpc.utils.ConfigUtil;
@@ -15,9 +14,17 @@ import com.yybf.example.common.service.UserService;
  */
 public class ConsumerExample {
     public static void main(String[] args) {
-        testReadConfig();
+        testUsingMock();
     }
 
+    /**
+     * 验证是否使用Mock接口
+     * 调用一个在远程项目中并未实现的接口，然后输出
+     *
+     * @return void:
+     * @author yangyibufeng
+     * @date 2024/3/15 21:36
+     */
     public static void testUsingMock() {
         // 获取代理
         UserService userService = ServiceProxyFactory.getProxy(UserService.class);
@@ -37,8 +44,15 @@ public class ConsumerExample {
         System.out.println("num = " + num);
     }
 
+    /**
+     * 测试读取配置文件的功能
+     *
+     * @return void:
+     * @author yangyibufeng
+     * @date 2024/3/15 21:38
+     */
     private static void testReadConfig() {
-        RpcConfig rpcConfig = ConfigUtil.loadConfig(RpcConfig.class,"rpc");
+        RpcConfig rpcConfig = ConfigUtil.loadConfig(RpcConfig.class, "rpc");
         System.out.println(rpcConfig);
     }
 }
