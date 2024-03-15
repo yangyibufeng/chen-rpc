@@ -47,6 +47,7 @@ public class ServiceProxy implements InvocationHandler {
             // 将请求序列化
             byte[] bodyBytes = serializer.serializer(rpcRequest);
             byte[] result = null;
+            //
             // 发送请求
             // todo 这里是硬编码，应该使用注册中心和服务发现机制去解决
             try(HttpResponse httpResponse = HttpRequest.post("http://localhost:18080").body(bodyBytes).execute()){
