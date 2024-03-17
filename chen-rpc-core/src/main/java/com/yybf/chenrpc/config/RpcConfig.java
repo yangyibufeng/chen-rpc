@@ -1,5 +1,6 @@
 package com.yybf.chenrpc.config;
 
+import com.yybf.chenrpc.serializer.SerializerKeys;
 import lombok.Data;
 
 /**
@@ -25,4 +26,7 @@ public class RpcConfig {
 
     // 是否开启模拟调用
     private boolean mock = false;
+
+    // 指定序列化器
+    private String serializer = SerializerKeys.JDK;
 }
