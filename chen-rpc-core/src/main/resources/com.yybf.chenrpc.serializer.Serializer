@@ -1,0 +1,4 @@
+jdk=com.yybf.chenrpc.serializer.JdkSerializer
+hessian=com.yybf.chenrpc.serializer.HessianSerializer
+json=com.yybf.chenrpc.serializer.JsonSerializer
+kryo=com.yybf.chenrpc.serializer.KryoSerializer

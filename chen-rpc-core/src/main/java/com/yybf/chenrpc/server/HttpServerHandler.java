@@ -1,10 +1,11 @@
 package com.yybf.chenrpc.server;
 
+import com.yybf.chenrpc.RpcApplication;
 import com.yybf.chenrpc.model.RpcRequest;
 import com.yybf.chenrpc.model.RpcResponse;
 import com.yybf.chenrpc.registry.LocalRegistry;
-import com.yybf.chenrpc.serializer.JdkSerializer;
 import com.yybf.chenrpc.serializer.Serializer;
+import com.yybf.chenrpc.serializer.SerializerFactory;
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServerRequest;
@@ -24,7 +25,9 @@ public class HttpServerHandler implements Handler<HttpServerRequest> {
     @Override
     public void handle(HttpServerRequest request) {
         // 指定序列化器
-        final Serializer serializer = new JdkSerializer();
+        //final Serializer serializer = new JdkSerializer();
+        // 修改为使用工厂 + 读取配置来指定序列化器
+        final Serializer serializer = SerializerFactory.getInstance(RpcApplication.getRpcConfig().getSerializer());
 
         // 记录日志
         System.out.println("Received request:" + request.method() + " /*-*/ " + request.uri());
@@ -47,7 +50,7 @@ public class HttpServerHandler implements Handler<HttpServerRequest> {
             if (request == null) {
                 rpcResponse.setMessage("rpcRequest is null");
                 // 处理响应
-                doResponse(request,rpcResponse,serializer);
+                doResponse(request, rpcResponse, serializer);
                 return;
             }
 
@@ -72,7 +75,7 @@ public class HttpServerHandler implements Handler<HttpServerRequest> {
             }
 
             //  处理响应
-            doResponse(request,rpcResponse,serializer);
+            doResponse(request, rpcResponse, serializer);
         });
     }
 

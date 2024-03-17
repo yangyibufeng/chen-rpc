@@ -2,10 +2,12 @@ package com.yybf.example.consumer;
 
 import cn.hutool.http.HttpRequest;
 import cn.hutool.http.HttpResponse;
+import com.yybf.chenrpc.RpcApplication;
 import com.yybf.chenrpc.model.RpcRequest;
 import com.yybf.chenrpc.model.RpcResponse;
 import com.yybf.chenrpc.serializer.JdkSerializer;
 import com.yybf.chenrpc.serializer.Serializer;
+import com.yybf.chenrpc.serializer.SerializerFactory;
 import com.yybf.example.common.model.User;
 import com.yybf.example.common.service.UserService;
 
@@ -22,7 +24,9 @@ public class UserServiceProxy implements UserService {
     @Override
     public User getUser(User user) {
         // 指定序列化器
-        Serializer serializer = new JdkSerializer();
+//        Serializer serializer = new JdkSerializer();
+        // 修改为使用工厂 + 读取配置来指定序列化器
+        final Serializer serializer = SerializerFactory.getInstance(RpcApplication.getRpcConfig().getSerializer());
 
         /* 发请求 */
         // 构建请求
