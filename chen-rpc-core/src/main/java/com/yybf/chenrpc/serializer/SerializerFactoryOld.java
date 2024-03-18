@@ -9,7 +9,7 @@ import java.util.Map;
  * @author yangyibufeng
  * @date 2024/3/17
  */
-public class SerializerFactoryOld1 {
+public class SerializerFactoryOld {
     // 序列化映射（用于实现单例）
     public static final Map<String, Serializer> KEY_SERIALIZER_MAP = new HashMap<String, Serializer>() {{
         put(SerializerKeys.JDK, new JdkSerializer());

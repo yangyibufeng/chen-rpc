@@ -14,7 +14,18 @@ import com.yybf.example.common.service.UserService;
  */
 public class ConsumerExample {
     public static void main(String[] args) {
-        testUsingMock();
+        testConsumer();
+    }
+
+    public static void testConsumer(){
+        // 获取代理
+        UserService userService = ServiceProxyFactory.getProxy(UserService.class);
+        User user = new User();
+        user.setName("yybf");
+
+        User newUser = userService.getUser(user);
+        System.out.println(newUser.getName());
+
     }
 
     /**

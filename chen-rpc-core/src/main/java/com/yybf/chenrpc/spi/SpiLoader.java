@@ -73,7 +73,7 @@ public class SpiLoader {
         }
         // .containsKey()判断Map里面是否包含指定键名-key
         if (!keyClassMap.containsKey(key)) {
-            throw new RuntimeException(String.format("SpiLoader 的 %s 不存在 key=%s 的类型", tClassName, key)))
+            throw new RuntimeException(String.format("SpiLoader 的 %s 不存在 key=%s 的类型", tClassName, key));
         }
         // 获取到要加载的实现类型
         Class<?> implClass = keyClassMap.get(key);
@@ -84,7 +84,7 @@ public class SpiLoader {
             try {
                 instanceCache.put(implClassName, implClass.newInstance());
             } catch (InstantiationException | IllegalAccessException e) {
-                String errorMsg = String.format("%s 类实例化失败", implClassName)
+                String errorMsg = String.format("%s 类实例化失败", implClassName);
                 throw new RuntimeException(errorMsg, e);
             }
         }

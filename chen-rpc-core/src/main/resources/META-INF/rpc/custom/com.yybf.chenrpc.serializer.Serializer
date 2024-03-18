@@ -1,0 +1,2 @@
+json=com.yybf.chenrpc.serializer.JsonSerializer
+kryo=com.yybf.chenrpc.serializer.KryoSerializer

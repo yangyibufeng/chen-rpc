@@ -37,6 +37,7 @@ public class ServiceProxy implements InvocationHandler {
 //        Serializer serializer = new JdkSerializer();
         // 修改为使用工厂 + 读取配置来指定序列化器
         final Serializer serializer = SerializerFactory.getInstance(RpcApplication.getRpcConfig().getSerializer());
+        System.out.println("序列化器为：" + serializer.toString());
 
 
         /* 发请求 */
@@ -55,7 +56,7 @@ public class ServiceProxy implements InvocationHandler {
             byte[] result = null;
             // 发送请求
             // todo 这里是硬编码，应该使用注册中心和服务发现机制去解决
-            try(HttpResponse httpResponse = HttpRequest.post("http://localhost:18080").body(bodyBytes).execute()){
+            try(HttpResponse httpResponse = HttpRequest.post("http://localhost:" + RpcApplication.getRpcConfig().getServerPort()).body(bodyBytes).execute()){
                 result = httpResponse.bodyBytes();
             }
             // 将响应反序列化
