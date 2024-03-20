@@ -13,6 +13,14 @@
     </properties>
 
     <dependencies>
+
+        <!-- https://mvnrepository.com/artifact/io.etcd/jetcd-core -->
+        <dependency>
+            <groupId>io.etcd</groupId>
+            <artifactId>jetcd-core</artifactId>
+            <version>0.7.7</version>
+        </dependency>
+
         <!-- 序列化 -->
         <!-- https://mvnrepository.com/artifact/com.caucho/hessian -->
         <dependency>
@@ -55,7 +63,7 @@
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <version>1.2.3</version>
+            <version>1.4.14</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
