@@ -12,21 +12,38 @@ import lombok.Data;
 @Data
 public class RpcConfig {
 
-    // 名称
+    /**
+     * 名称
+     */
     private String name = "chen-rpc";
 
-    // 版本号
+    /**
+     * 版本号
+     */
     private String version = "1.0";
 
-    // 服务器主机名
+    /**
+     * 服务器主机名
+     */
     private String serverHost = "localHost";
 
-    // 服务器端口号
+    /**
+     * 服务器端口号
+     */
     private Integer serverPort = 8080;
 
-    // 是否开启模拟调用
+    /**
+     * 是否开启模拟调用
+     */
     private boolean mock = false;
 
-    // 指定序列化器
+    /**
+     * 指定序列化器
+     */
     private String serializer = SerializerKeys.JDK;
+
+    /**
+     * 注册中心配置
+     */
+    private RegistryConfig registryConfig = new RegistryConfig();
 }
