@@ -2,11 +2,9 @@ package com.yybf.chenrpc.serializer;
 
 import com.yybf.chenrpc.spi.SpiLoader;
 
-import java.util.HashMap;
-import java.util.Map;
-
 /**
  * 序列化器工厂（用于获取序列化器对象）
+ * 使用SPI加载序列化器
  *
  * @author yangyibufeng
  * @date 2024/3/17

@@ -5,7 +5,6 @@ import cn.hutool.http.HttpResponse;
 import com.yybf.chenrpc.RpcApplication;
 import com.yybf.chenrpc.model.RpcRequest;
 import com.yybf.chenrpc.model.RpcResponse;
-import com.yybf.chenrpc.serializer.JdkSerializer;
 import com.yybf.chenrpc.serializer.Serializer;
 import com.yybf.chenrpc.serializer.SerializerFactory;
 
