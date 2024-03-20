@@ -1,22 +1,39 @@
 package com.yybf.chenrpc.model;
 
+import cn.hutool.core.util.StrUtil;
+import lombok.Data;
+
 /**
  * 服务元信息（注册信息）
  *
  * @author yangyibufeng
  * @date 2024/3/20
  */
+@Data
 public class ServiceMetaInfo {
-    // 服务名称
+    /**
+     * 服务名称
+     */
     private String serviceName;
 
-    // 服务版本号
+    /**
+     * 服务版本号
+     */
     private String serviceVersion = "1.0";
 
-    // 服务地址
-    private String serviceAddress;
+    /**
+     * 服务域名
+     */
+    private String serviceHost;
 
-    // 服务分组（待实现）
+    /**
+     * 服务端口号
+     */
+    private String servicePorts;
+
+    /**
+     * 服务分组（待实现）
+     */
     private String serviceGroup = "default";
 
     /**
@@ -42,6 +59,20 @@ public class ServiceMetaInfo {
      * @date 2024/3/20 16:49
      */
     public String getServiceNodeKey() {
-        return String.format("%s/%s", getServiceKey(), serviceAddress);
+        return String.format("%s/%s:%s", getServiceKey(), serviceHost, servicePorts);
+    }
+
+    /**
+     * 获取完整的服务地址
+     *
+     * @return java.lang.String:
+     * @author yangyibufeng
+     * @date 2024/3/20 20:19
+     */
+    public String getServiceAddress() {
+        if (StrUtil.contains("http", serviceHost)) {
+            return String.format("http://%s:%s", serviceHost, servicePorts);
+        }
+        return String.format("%s:%s", serviceHost, servicePorts);
     }
 }
