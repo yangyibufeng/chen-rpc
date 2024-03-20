@@ -29,7 +29,7 @@ public class ServiceMetaInfo {
     /**
      * 服务端口号
      */
-    private String servicePorts;
+    private Integer servicePort;
 
     /**
      * 服务分组（待实现）
@@ -59,7 +59,7 @@ public class ServiceMetaInfo {
      * @date 2024/3/20 16:49
      */
     public String getServiceNodeKey() {
-        return String.format("%s/%s:%s", getServiceKey(), serviceHost, servicePorts);
+        return String.format("%s/%s:%s", getServiceKey(), serviceHost, servicePort);
     }
 
     /**
@@ -71,8 +71,8 @@ public class ServiceMetaInfo {
      */
     public String getServiceAddress() {
         if (StrUtil.contains("http", serviceHost)) {
-            return String.format("http://%s:%s", serviceHost, servicePorts);
+            return String.format("http://%s:%s", serviceHost, servicePort);
         }
-        return String.format("%s:%s", serviceHost, servicePorts);
+        return String.format("%s:%s", serviceHost, servicePort);
     }
 }
