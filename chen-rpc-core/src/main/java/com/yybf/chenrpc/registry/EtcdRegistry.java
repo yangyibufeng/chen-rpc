@@ -97,7 +97,6 @@ public class EtcdRegistry implements Registry {
         } catch (Exception e) {
             throw new RuntimeException("获取服务列表失败", e);
         }
-        return null;
     }
 
     @Override
