@@ -62,5 +62,14 @@ public interface Registry {
      */
     void destroy();
 
+    /**
+     * 心跳检测（服务端）
+     *
+     * @return void:
+     * @author yangyibufeng
+     * @date 2024/3/21 21:03
+     */
+    void heartBeat();
+
 
 }

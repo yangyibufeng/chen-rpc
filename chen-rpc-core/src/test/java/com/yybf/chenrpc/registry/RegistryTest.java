@@ -2,7 +2,6 @@ package com.yybf.chenrpc.registry;
 
 import com.yybf.chenrpc.config.RegistryConfig;
 import com.yybf.chenrpc.model.ServiceMetaInfo;
-import com.yybf.chenrpc.utils.ConfigUtil;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -70,5 +69,13 @@ public class RegistryTest {
         System.out.println(serviceMetaInfoList);
         Assert.assertNotNull(serviceMetaInfoList);
 
+    }
+
+    @Test
+    public void heartBeat() throws Exception {
+        // init中已经开启了初始化
+        Register();
+        // 阻塞1分钟
+        Thread.sleep(60*1000L);
     }
 }
