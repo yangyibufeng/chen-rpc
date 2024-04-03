@@ -11,6 +11,7 @@ import io.etcd.jetcd.*;
 import io.etcd.jetcd.options.GetOption;
 import io.etcd.jetcd.options.PutOption;
 import io.etcd.jetcd.watch.WatchEvent;
+import lombok.extern.slf4j.Slf4j;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
@@ -26,6 +27,7 @@ import java.util.stream.Collectors;
  * @author yangyibufeng
  * @date 2024/3/20
  */
+@Slf4j
 public class EtcdRegistry implements Registry {
 
     private Client client;
@@ -106,7 +108,8 @@ public class EtcdRegistry implements Registry {
     public List<ServiceMetaInfo> serviceDiscovery(String serviceKey) {
         // 优先从缓存中获取服务
         List<ServiceMetaInfo> cachedServiceMetaInfoList = registryServiceCache.readCache();
-        if(cachedServiceMetaInfoList != null && !cachedServiceMetaInfoList.isEmpty()){
+        if(cachedServiceMetaInfoList != null ){
+            log.info("从缓存中获取 -- ");
             return cachedServiceMetaInfoList;
         }
 

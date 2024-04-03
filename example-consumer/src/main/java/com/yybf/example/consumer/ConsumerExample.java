@@ -17,6 +17,7 @@ public class ConsumerExample {
         for (int i = 0; i < 3; i++) {
 
             testConsumer();
+            System.out.println("-------------\n");
         }
     }
 
