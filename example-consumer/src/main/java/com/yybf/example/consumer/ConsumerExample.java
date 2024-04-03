@@ -14,7 +14,10 @@ import com.yybf.example.common.service.UserService;
  */
 public class ConsumerExample {
     public static void main(String[] args) {
-        testConsumer();
+        for (int i = 0; i < 3; i++) {
+
+            testConsumer();
+        }
     }
 
     public static void testConsumer(){

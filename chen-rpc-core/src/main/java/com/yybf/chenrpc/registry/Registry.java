@@ -71,5 +71,15 @@ public interface Registry {
      */
     void heartBeat();
 
+    /**
+     * 
+     * 对服务变换进行监听（消费端）
+     *
+     * @author yangyibufeng 
+     * @date 2024/4/3 15:47
+     * @param serviceNodeKey: 
+     * @return void:
+     */
+    void watch(String serviceNodeKey);
 
 }
