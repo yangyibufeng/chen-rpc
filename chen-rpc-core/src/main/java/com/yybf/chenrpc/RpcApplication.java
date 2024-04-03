@@ -39,6 +39,9 @@ public class RpcApplication {
         registry.init(registryConfig);
         log.info("registry init,config = {}",registryConfig);
 
+        // 创建并注册Shutdown Hook，JVM退出时执行操作
+        // 创建一个线程来执行销毁的操作
+        Runtime.getRuntime().addShutdownHook(new Thread(registry::destroy));
     }
 
     /**

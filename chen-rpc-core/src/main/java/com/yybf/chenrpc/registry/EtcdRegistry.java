@@ -15,6 +15,7 @@ import java.time.Duration;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 /**
@@ -39,6 +40,11 @@ public class EtcdRegistry implements Registry {
      */
     private final Set<String> localRegisterNodeKeySet = new HashSet<>();
 
+
+    /**
+     * 注册中心服务本地缓存
+     */
+    private final RegistryServiceCache registryServiceCache = new RegistryServiceCache();
 
     @Override
     public void init(RegistryConfig registryConfig) {
@@ -92,6 +98,12 @@ public class EtcdRegistry implements Registry {
 
     @Override
     public List<ServiceMetaInfo> serviceDiscovery(String serviceKey) {
+        // 优先从缓存中获取服务
+        List<ServiceMetaInfo> cachedServiceMetaInfoList = registryServiceCache.readCache();
+        if(cachedServiceMetaInfoList != null){
+            return cachedServiceMetaInfoList;
+        }
+
         // 根据服务名称作为前缀，从 Etcd 获取服务下的节点列表：
         // 前缀搜索，结尾要加 “ / ”
         String searchPrefix = ETCD_ROOT_PATH + serviceKey + "/";
@@ -106,12 +118,16 @@ public class EtcdRegistry implements Registry {
                     .getKvs();
 
             // 解析服务信息
-            return keyValues.stream()
+            List<ServiceMetaInfo> serviceMetaInfoList = keyValues.stream()
                     .map(keyValue -> {
                         String value = keyValue.getValue().toString(StandardCharsets.UTF_8);
                         return JSONUtil.toBean(value, ServiceMetaInfo.class);
                     })
                     .collect(Collectors.toList());
+
+            // 将获取到的服务信息装配到本地缓存中
+            registryServiceCache.writeCache(serviceMetaInfoList);
+            return serviceMetaInfoList;
         } catch (Exception e) {
             throw new RuntimeException("获取服务列表失败", e);
         }
@@ -120,6 +136,16 @@ public class EtcdRegistry implements Registry {
     @Override
     public void destroy() {
         System.out.println("当前节点下线");
+        // 下线节点
+        // 遍历本节点所有的key
+        for(String key : localRegisterNodeKeySet){
+            try {
+                kvClient.delete(ByteSequence.from(key,StandardCharsets.UTF_8)).get();
+            } catch (Exception e) {
+                throw new RuntimeException(key + "节点下线失败");
+            }
+        }
+
         // 释放资源
         if (kvClient != null) {
             kvClient.close();
