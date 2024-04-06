@@ -32,7 +32,7 @@ public enum ProtocolMessageTypeEnum {
      * @author yangyibufeng
      * @date 2024/4/5 22:25
      */
-    public static ProtocolMessageTypeEnum getEnumValue(int key) {
+    public static ProtocolMessageTypeEnum getEnumByKey(int key) {
         for (ProtocolMessageTypeEnum anEnum : ProtocolMessageTypeEnum.values()) {
             if (anEnum.key == key) {
                 return anEnum;

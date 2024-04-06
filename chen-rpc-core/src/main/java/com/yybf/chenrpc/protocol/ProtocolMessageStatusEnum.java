@@ -32,7 +32,7 @@ public enum ProtocolMessageStatusEnum {
      * @author yangyibufeng
      * @date 2024/4/5 22:25
      */
-    public static ProtocolMessageStatusEnum getEnumValue(int value) {
+    public static ProtocolMessageStatusEnum getEnumByValue(int value) {
         for (ProtocolMessageStatusEnum anEnum : ProtocolMessageStatusEnum.values()) {
             if (anEnum.value == value) {
                 return anEnum;

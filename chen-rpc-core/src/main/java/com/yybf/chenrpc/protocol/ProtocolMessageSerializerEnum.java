@@ -50,7 +50,7 @@ public enum ProtocolMessageSerializerEnum {
      * @author yangyibufeng
      * @date 2024/4/5 22:25
      */
-    public static ProtocolMessageSerializerEnum getEnumKey(int key) {
+    public static ProtocolMessageSerializerEnum getEnumByKey(int key) {
         for (ProtocolMessageSerializerEnum anEnum : ProtocolMessageSerializerEnum.values()) {
             if (anEnum.key == key) {
                 return anEnum;
@@ -67,7 +67,7 @@ public enum ProtocolMessageSerializerEnum {
      * @author yangyibufeng
      * @date 2024/4/5 22:25
      */
-    public static ProtocolMessageSerializerEnum getEnumValue(String value) {
+    public static ProtocolMessageSerializerEnum getEnumByValue(String value) {
         for (ProtocolMessageSerializerEnum anEnum : ProtocolMessageSerializerEnum.values()) {
             if (anEnum.value.equals(value)) {
                 return anEnum;
