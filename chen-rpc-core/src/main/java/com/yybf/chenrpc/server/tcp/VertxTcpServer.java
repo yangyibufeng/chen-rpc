@@ -1,10 +1,12 @@
 package com.yybf.chenrpc.server.tcp;
 
+import com.caucho.services.message.MessageSender;
 import com.yybf.chenrpc.server.HttpServer;
+import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.net.NetServer;
-
-import java.util.concurrent.atomic.AtomicInteger;
+import io.vertx.core.parsetools.RecordParser;
 
 /**
  * Vertx TCP 服务器实现
@@ -12,9 +14,9 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @author yangyibufeng
  * @date 2024/4/5
  */
-public class VertxTcpServer implements HttpServer{
+public class VertxTcpServer implements HttpServer {
 
-    private byte[] handleRequest(byte[] requestData){
+    private byte[] handleRequest(byte[] requestData) {
         // 在这里编写处理请求的逻辑，根据requestData的构造响应数据并返回
         // 这里只是一个示例，实际逻辑需要根据集体的业务需求来实现
         return "hello client".getBytes();
@@ -46,16 +48,16 @@ public class VertxTcpServer implements HttpServer{
         server.connectHandler(new TcpServerHandler());
 
         // 启动 TCP 服务器，并监听指定端口
-        server.listen(port ,result -> {
-            if(result.succeeded()){
+        server.listen(port, result -> {
+            if (result.succeeded()) {
                 System.out.println("TCP server started on port" + port);
-            }else{
+            } else {
                 System.out.println("Failed to start TCP server: " + result.cause());
             }
         });
     }
 
-    public void testTCPServer(int port){
+    public void testTCPServer(int port) {
         // 创建一个Vertx实例
         Vertx vertx = Vertx.vertx();
 
@@ -67,39 +69,55 @@ public class VertxTcpServer implements HttpServer{
 
         //处理网络请求
         server.connectHandler(socket -> {
-            // 处理连接
-           socket.handler(buffer -> {
-               String testMessage = "Hello server!Hello server!Hello server!";
-               int messageLength = testMessage.getBytes().length;
+            String testMessage = "Hello server!Hello server!Hello server!";
+            int messageLength = testMessage.getBytes().length;
 
-               String str = new String(buffer.getBytes());
-               System.out.println("result ： " + str);
+            // 构造parser
+            RecordParser parser = RecordParser.newFixed(messageLength);
+            parser.setOutput(new Handler<Buffer>() {
+                @Override
+                public void handle(Buffer buffer) {
+                    String str = new String(buffer.getBytes());
+                    System.out.println(str);
+                    if(testMessage.equals(str)){
+                        System.out.println("good！");
+                    }
+                }
+            });
 
-               int bufferLength = buffer.getBytes().length;
-               if(bufferLength < messageLength){
-                   System.out.println("result ： 半包，length = " + bufferLength);
+            // 装配处理逻辑代码
+            socket.handler(parser);
+           /* // 处理连接
+            socket.handler(buffer -> {
+
+                String str = new String(buffer.getBytes());
+                System.out.println("result ： " + str);
+
+                int bufferLength = buffer.getBytes().length;
+                if (bufferLength < messageLength) {
+                    System.out.println("result ： 半包，length = " + bufferLength);
 //                   half_pack_num.getAndIncrement();
-                   return ;
-               }else if(bufferLength > messageLength){
-                   System.out.println("result ： 粘包，length = " + bufferLength);
+                    return;
+                } else if (bufferLength > messageLength) {
+                    System.out.println("result ： 粘包，length = " + bufferLength);
 //                   sticky_pack_num.getAndIncrement();
-                   return ;
-               }
+                    return;
+                }
 
 //               String str = new String(buffer.getBytes(0,messageLength));
 //               System.out.println("result ： " + str);
-               if(testMessage.equals(str)){
-                   System.out.println("good");
-               }
+                if (testMessage.equals(str)) {
+                    System.out.println("good");
+                }
 
-           });
+//            });*/
         });
 
         // 启动 TCP 服务器，并监听指定端口
-        server.listen(port ,result -> {
-            if(result.succeeded()){
+        server.listen(port, result -> {
+            if (result.succeeded()) {
                 System.out.println("TCP server started on port" + port);
-            }else{
+            } else {
                 System.out.println("Failed to start TCP server: " + result.cause());
             }
         });
