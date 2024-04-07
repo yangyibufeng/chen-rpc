@@ -1,6 +1,7 @@
 package com.yybf.chenrpc.proxy;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.IdUtil;
 import cn.hutool.http.HttpRequest;
 import cn.hutool.http.HttpResponse;
 import com.yybf.chenrpc.RpcApplication;
@@ -9,18 +10,25 @@ import com.yybf.chenrpc.constant.RpcConstant;
 import com.yybf.chenrpc.model.RpcRequest;
 import com.yybf.chenrpc.model.RpcResponse;
 import com.yybf.chenrpc.model.ServiceMetaInfo;
+import com.yybf.chenrpc.protocol.*;
 import com.yybf.chenrpc.registry.Registry;
 import com.yybf.chenrpc.registry.RegistryFactory;
 import com.yybf.chenrpc.serializer.Serializer;
 import com.yybf.chenrpc.serializer.SerializerFactory;
+import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.net.NetClient;
+import io.vertx.core.net.NetSocket;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * 动态服务代理（JDK动态代理）
+ * 使用自定义tcp协议进行重构
  *
  * @author yangyibufeng
  * @date 2024/3/13
@@ -39,10 +47,11 @@ public class ServiceProxy implements InvocationHandler {
      */
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+        // 读取配置列表
+        RpcConfig rpcConfig = RpcApplication.getRpcConfig();
         // 指定序列化器
-//        Serializer serializer = new JdkSerializer();
         // 修改为使用工厂 + 读取配置来指定序列化器
-        final Serializer serializer = SerializerFactory.getInstance(RpcApplication.getRpcConfig().getSerializer());
+        final Serializer serializer = SerializerFactory.getInstance(rpcConfig.getSerializer());
         System.out.println("序列化器为：" + serializer.toString());
 
 
@@ -61,21 +70,8 @@ public class ServiceProxy implements InvocationHandler {
             // 将请求序列化
             byte[] bodyBytes = serializer.serializer(rpcRequest);
             // 发送请求
-            /**
-            // 这里是硬编码，应该使用注册中心和服务发现机制去解决
-
-             try(HttpResponse httpResponse = HttpRequest.post("http://localhost:" + RpcApplication.getRpcConfig().getServerPort()).body(bodyBytes).execute()){
-                result = httpResponse.bodyBytes();
-            }
-            // 将响应反序列化
-            RpcResponse rpcResponse = serializer.deserializer(result, RpcResponse.class);
-            // 将获取到的结果返回
-            return rpcResponse.getData();
-             */
-
             /* 通过使用注册中心和服务发现机制来发送请求 */
             // 获取指定的注册中心实例
-            RpcConfig rpcConfig = RpcApplication.getRpcConfig();
             Registry registry = RegistryFactory.getInstance(rpcConfig.getRegistryConfig().getRegistry());
             // 开始构建服务信息用于查找对应的服务
             ServiceMetaInfo serviceMetaInfo = new ServiceMetaInfo();
@@ -91,15 +87,55 @@ public class ServiceProxy implements InvocationHandler {
             // todo 暂时先取第一个mateInfo
             ServiceMetaInfo selectServiceMetaInfo = serviceMetaInfoList.get(0);
 
-            // 发送请求
-            try(HttpResponse httpResponse = HttpRequest.post(selectServiceMetaInfo.getServiceAddress())
-                    .body(bodyBytes)
-                    .execute()){
-                byte[] result = httpResponse.bodyBytes();
-                // 反序列化
-                RpcResponse rpcResponse = serializer.deserializer(result,RpcResponse.class);
-                return rpcResponse.getData();
-            }
+            // 发送Tcp请求
+            Vertx vertx = Vertx.vertx();
+            NetClient netClient = vertx.createNetClient();
+            // 使异步式的vertx通过阻塞变为同步
+            CompletableFuture<RpcResponse> responseFuture = new CompletableFuture<>();
+            netClient.connect(selectServiceMetaInfo.getServicePort(),selectServiceMetaInfo.getServiceHost(),
+                result->{
+                    if(result.succeeded()){
+                        System.out.println("Connected to TCP server!");
+                        NetSocket socket = result.result();
+                        // 发送数据
+                        // 构造消息
+                        ProtocolMessage<Object> protocolMessage = new ProtocolMessage<>();
+                        ProtocolMessage.Header header = new ProtocolMessage.Header();
+                        header.setMagic(ProtocolConstant.PROTOCOL_MAGIC);
+                        header.setVersion(ProtocolConstant.PROTOCOL_VERSION);
+                        header.setSerializer((byte) ProtocolMessageSerializerEnum.getEnumByValue(rpcConfig.getSerializer()).getKey());
+                        header.setType((byte) ProtocolMessageTypeEnum.REQUEST.getKey());
+                        header.setRequestId(IdUtil.getSnowflakeNextId());
+
+                        protocolMessage.setHeader(header);
+                        protocolMessage.setBody(rpcRequest);
+
+                        // 编码请求
+                        try {
+                            Buffer encode = ProtocolMessageEncoder.encode(protocolMessage);
+                            socket.write(encode);
+                        } catch (Exception e) {
+                            throw new RuntimeException("协议消息编码失败！ exception ："+ e);
+                        }
+
+                        // 接收响应
+                        socket.handler(buffer -> {
+                            try {
+                                ProtocolMessage<RpcResponse> decode = (ProtocolMessage<RpcResponse>) ProtocolMessageDecoder.decode(buffer);
+                                responseFuture.complete(decode.getBody());
+                            } catch (Exception e) {
+                                throw new RuntimeException("协议消息解码失败！ exception ："+ e);
+                            }
+                        });
+                    }else{
+                        System.out.println("Failed to connect to TCP server!");
+                    }
+            });
+
+            RpcResponse rpcResponse = responseFuture.get();
+            // 关闭链接
+            netClient.close();
+            return rpcResponse;
 
         } catch (IOException e) {
             e.printStackTrace();
