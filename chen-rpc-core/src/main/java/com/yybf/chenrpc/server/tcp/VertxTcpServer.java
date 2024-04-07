@@ -1,6 +1,5 @@
 package com.yybf.chenrpc.server.tcp;
 
-import com.caucho.services.message.MessageSender;
 import com.yybf.chenrpc.server.HttpServer;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
@@ -57,6 +56,14 @@ public class VertxTcpServer implements HttpServer {
         });
     }
 
+    /**
+     * 测试TCP粘包半包的服务端
+     *
+     * @param port:
+     * @return void:
+     * @author yangyibufeng
+     * @date 2024/4/7 22:59
+     */
     public void testTCPServer(int port) {
         // 创建一个Vertx实例
         Vertx vertx = Vertx.vertx();
@@ -64,53 +71,45 @@ public class VertxTcpServer implements HttpServer {
         // 创建一个TCP服务器
         NetServer server = vertx.createNetServer();
 
-//        AtomicInteger half_pack_num = new AtomicInteger();
-//        AtomicInteger sticky_pack_num = new AtomicInteger();
-
         //处理网络请求
         server.connectHandler(socket -> {
             String testMessage = "Hello server!Hello server!Hello server!";
             int messageLength = testMessage.getBytes().length;
 
             // 构造parser
-            RecordParser parser = RecordParser.newFixed(messageLength);
+            RecordParser parser = RecordParser.newFixed(8);
             parser.setOutput(new Handler<Buffer>() {
+                // 初始化
+                int size = -1;
+                /* 读取完整的数据头和体 */
+                // 构建返回体 resultBuffer
+                Buffer resultBuffer = Buffer.buffer();
+
                 @Override
                 public void handle(Buffer buffer) {
-                    String str = new String(buffer.getBytes());
-                    System.out.println(str);
-                    if(testMessage.equals(str)){
-                        System.out.println("good！");
+
+                    if (size == -1) { // 读取的是头信息
+                        // 读取消息体的长度
+                        size = buffer.getInt(4);
+                        // 更改截取的长度
+                        parser.fixedSizeMode(size);
+                        // 将头信息写入结果
+                        resultBuffer.appendBuffer(buffer);
+                        resultBuffer.appendBytes(" -- ".getBytes());
+                    } else { // 读取的是体信息
+                        // 写入体信息到结果
+                        resultBuffer.appendBuffer(buffer);
+                        System.out.println("result：" + resultBuffer);
+                        // 重置
+                        parser.fixedSizeMode(8);
+                        size = -1;
+                        resultBuffer = Buffer.buffer();
                     }
                 }
             });
 
             // 装配处理逻辑代码
             socket.handler(parser);
-           /* // 处理连接
-            socket.handler(buffer -> {
-
-                String str = new String(buffer.getBytes());
-                System.out.println("result ： " + str);
-
-                int bufferLength = buffer.getBytes().length;
-                if (bufferLength < messageLength) {
-                    System.out.println("result ： 半包，length = " + bufferLength);
-//                   half_pack_num.getAndIncrement();
-                    return;
-                } else if (bufferLength > messageLength) {
-                    System.out.println("result ： 粘包，length = " + bufferLength);
-//                   sticky_pack_num.getAndIncrement();
-                    return;
-                }
-
-//               String str = new String(buffer.getBytes(0,messageLength));
-//               System.out.println("result ： " + str);
-                if (testMessage.equals(str)) {
-                    System.out.println("good");
-                }
-
-//            });*/
         });
 
         // 启动 TCP 服务器，并监听指定端口
@@ -121,12 +120,6 @@ public class VertxTcpServer implements HttpServer {
                 System.out.println("Failed to start TCP server: " + result.cause());
             }
         });
-
-//        int hpn = half_pack_num.intValue();
-//        int spn = sticky_pack_num.intValue();
-
-//        System.out.println("半包数为：" + hpn + "，比率为：" + (hpn / 1000 * 100) + "%");
-//        System.out.println("粘包数为：" + spn + "，比率为：" + (spn / 1000 * 100) + "%");
 
     }
 

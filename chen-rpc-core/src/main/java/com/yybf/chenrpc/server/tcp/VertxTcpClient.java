@@ -1,6 +1,7 @@
 package com.yybf.chenrpc.server.tcp;
 
 import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.net.NetSocket;
 
 /**
@@ -47,7 +48,12 @@ public class VertxTcpClient {
 
                 for (int i = 0; i < 1000; i++) {
                     // 发送数据
-                    socket.write("Hello server!Hello server!Hello server!");
+                    Buffer buffer = Buffer.buffer();
+                    String testMessage = "This is " + (i + 1) + " times;Hello server!Hello server!Hello server!";
+                    buffer.appendInt(0);
+                    buffer.appendInt(testMessage.length());
+                    buffer.appendBytes(testMessage.getBytes());
+                    socket.write(buffer);
                 }
 
                 //接收数据
