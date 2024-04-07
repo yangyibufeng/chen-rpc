@@ -13,6 +13,7 @@ import com.yybf.chenrpc.registry.Registry;
 import com.yybf.chenrpc.registry.RegistryFactory;
 import com.yybf.chenrpc.serializer.Serializer;
 import com.yybf.chenrpc.serializer.SerializerFactory;
+import com.yybf.chenrpc.server.tcp.VertxTcpClient;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.net.NetClient;
@@ -83,9 +84,10 @@ public class ServiceProxy implements InvocationHandler {
             }
 
             // todo 暂时先取第一个mateInfo
-            ServiceMetaInfo selectServiceMetaInfo = serviceMetaInfoList.get(0);
+            ServiceMetaInfo selectedServiceMetaInfo = serviceMetaInfoList.get(0);
 
-            // 发送Tcp请求
+            RpcResponse rpcResponse = VertxTcpClient.doRequest(rpcRequest, selectedServiceMetaInfo);
+            /*// 发送Tcp请求
             Vertx vertx = Vertx.vertx();
             NetClient netClient = vertx.createNetClient();
             // 使异步式的vertx通过阻塞变为同步
@@ -103,8 +105,8 @@ public class ServiceProxy implements InvocationHandler {
                             header.setVersion(ProtocolConstant.PROTOCOL_VERSION);
                             header.setSerializer((byte) ProtocolMessageSerializerEnum.getEnumByValue(rpcConfig.getSerializer()).getKey());
                             header.setType((byte) ProtocolMessageTypeEnum.REQUEST.getKey());
+                            // 生成全局请求ID
                             header.setRequestId(IdUtil.getSnowflakeNextId());
-
                             protocolMessage.setHeader(header);
                             protocolMessage.setBody(rpcRequest);
 
@@ -133,7 +135,7 @@ public class ServiceProxy implements InvocationHandler {
             RpcResponse rpcResponse = responseFuture.get();
             // 关闭链接
             netClient.close();
-            return rpcResponse.getData();
+            return rpcResponse.getData();*/
 
         } catch (IOException e) {
             e.printStackTrace();

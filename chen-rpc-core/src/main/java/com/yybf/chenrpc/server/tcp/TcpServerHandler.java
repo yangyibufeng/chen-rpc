@@ -1,20 +1,16 @@
 package com.yybf.chenrpc.server.tcp;
 
-import com.yybf.chenrpc.RpcApplication;
 import com.yybf.chenrpc.model.RpcRequest;
 import com.yybf.chenrpc.model.RpcResponse;
-import com.yybf.chenrpc.protocol.*;
+import com.yybf.chenrpc.protocol.ProtocolMessage;
+import com.yybf.chenrpc.protocol.ProtocolMessageDecoder;
+import com.yybf.chenrpc.protocol.ProtocolMessageEncoder;
+import com.yybf.chenrpc.protocol.ProtocolMessageTypeEnum;
 import com.yybf.chenrpc.registry.LocalRegistry;
-import com.yybf.chenrpc.serializer.Serializer;
-import com.yybf.chenrpc.serializer.SerializerFactory;
-import io.netty.resolver.InetSocketAddressResolver;
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
-import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.net.NetSocket;
 
-import java.io.IOException;
 import java.lang.reflect.Method;
 
 /**
@@ -26,8 +22,8 @@ import java.lang.reflect.Method;
 public class TcpServerHandler implements Handler<NetSocket> {
     @Override
     public void handle(NetSocket netSocket) {
-        // 处理连接
-        netSocket.handler(buffer -> {
+        // 处理连接 （使用自己封装的处理器）
+        TcpBufferHandleWrapper bufferHandleWrapper = new TcpBufferHandleWrapper(buffer -> {
             // 接受请求并解码
             ProtocolMessage<RpcRequest> protocolMessage;
 
@@ -49,7 +45,7 @@ public class TcpServerHandler implements Handler<NetSocket> {
                 // 然后利用请求中的方法名和参数类型来找到需要具体执行的方法，
                 // 最后通过反射将实现类的实例和具体参数传入方法中进行调用
                 Class<?> implClass = LocalRegistry.get(rpcRequest.getServiceName());
-                Method method = implClass.getMethod(rpcRequest.getMethodName(),rpcRequest.getParameterTypes());
+                Method method = implClass.getMethod(rpcRequest.getMethodName(), rpcRequest.getParameterTypes());
                 Object result = method.invoke(implClass.newInstance(), rpcRequest.getArgs());
 
                 // 封装返回结果
