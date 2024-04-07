@@ -9,19 +9,16 @@ import com.yybf.chenrpc.registry.Registry;
 import com.yybf.chenrpc.registry.RegistryFactory;
 import com.yybf.chenrpc.server.HttpServer;
 import com.yybf.chenrpc.server.VertxHttpServer;
-import com.yybf.chenrpc.server.tcp.VertxTcpClient;
-import com.yybf.chenrpc.server.tcp.VertxTcpServer;
 import com.yybf.example.common.service.UserService;
 
 /**
- * 使用自定义的基于TCP的网络传输协议
  * 简易服务提供者示例
  * 测试全局配置对象加载
  *
  * @author yangyibufeng
- * @date 2024/4/7
+ * @date 2024/3/15
  */
-public class ProviderExample {
+public class ProviderExampleWithHttp {
     public static void main(String[] args) {
         // RPC框架初始化
         RpcApplication.init();
@@ -47,9 +44,9 @@ public class ProviderExample {
             throw new RuntimeException(e);
         }
 
-        // 启动 TCP 服务
-        VertxTcpServer vertxTcpServer = new VertxTcpServer();
-        vertxTcpServer.doStart(RpcApplication.getRpcConfig().getServerPort());
+        // 启动web服务
+        HttpServer httpServer = new VertxHttpServer();
+        httpServer.doStart(RpcApplication.getRpcConfig().getServerPort());
 
 
     }

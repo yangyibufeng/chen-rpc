@@ -29,7 +29,7 @@ public class VertxTcpServer implements HttpServer{
         NetServer server = vertx.createNetServer();
 
         //处理网络请求
-        server.connectHandler(socket -> {
+        /*server.connectHandler(socket -> {
             // 处理连接
            socket.handler(buffer -> {
                // 将收到的请求转化成字节数组
@@ -40,7 +40,10 @@ public class VertxTcpServer implements HttpServer{
                // 发送响应（发送的数据格式为Buffer）
                socket.write(Buffer.buffer(responseData));
            });
-        });
+        });*/
+
+        // 使用自定义的处理器
+        server.connectHandler(new TcpServerHandler());
 
         // 启动 TCP 服务器，并监听指定端口
         server.listen(port ,result -> {

@@ -14,10 +14,9 @@ import com.yybf.example.common.service.UserService;
  */
 public class ConsumerExample {
     public static void main(String[] args) {
-        for (int i = 0; i < 3; i++) {
-
-            testConsumer();
-            System.out.println("-------------\n");
+        testConsumer();
+        int time = 10;
+        while(time -- > 0 ){
         }
     }
 

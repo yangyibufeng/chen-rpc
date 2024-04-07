@@ -2,8 +2,6 @@ package com.yybf.chenrpc.proxy;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.IdUtil;
-import cn.hutool.http.HttpRequest;
-import cn.hutool.http.HttpResponse;
 import com.yybf.chenrpc.RpcApplication;
 import com.yybf.chenrpc.config.RpcConfig;
 import com.yybf.chenrpc.constant.RpcConstant;
@@ -52,7 +50,7 @@ public class ServiceProxy implements InvocationHandler {
         // 指定序列化器
         // 修改为使用工厂 + 读取配置来指定序列化器
         final Serializer serializer = SerializerFactory.getInstance(rpcConfig.getSerializer());
-        System.out.println("序列化器为：" + serializer.toString());
+        System.out.println("ServiceProxy：序列化器为：" + serializer.toString());
 
 
         /* 发请求 */
@@ -80,7 +78,7 @@ public class ServiceProxy implements InvocationHandler {
             // 从serviceMetaInfo中获取服务键名，然后从Etcd中查找对应的服务
             List<ServiceMetaInfo> serviceMetaInfoList = registry.serviceDiscovery(serviceMetaInfo.getServiceKey());
             // 如果未获取到值
-            if(CollUtil.isEmpty(serviceMetaInfoList)){
+            if (CollUtil.isEmpty(serviceMetaInfoList)) {
                 throw new RuntimeException("暂无对应服务地址!");
             }
 
@@ -92,50 +90,50 @@ public class ServiceProxy implements InvocationHandler {
             NetClient netClient = vertx.createNetClient();
             // 使异步式的vertx通过阻塞变为同步
             CompletableFuture<RpcResponse> responseFuture = new CompletableFuture<>();
-            netClient.connect(selectServiceMetaInfo.getServicePort(),selectServiceMetaInfo.getServiceHost(),
-                result->{
-                    if(result.succeeded()){
-                        System.out.println("Connected to TCP server!");
-                        NetSocket socket = result.result();
-                        // 发送数据
-                        // 构造消息
-                        ProtocolMessage<Object> protocolMessage = new ProtocolMessage<>();
-                        ProtocolMessage.Header header = new ProtocolMessage.Header();
-                        header.setMagic(ProtocolConstant.PROTOCOL_MAGIC);
-                        header.setVersion(ProtocolConstant.PROTOCOL_VERSION);
-                        header.setSerializer((byte) ProtocolMessageSerializerEnum.getEnumByValue(rpcConfig.getSerializer()).getKey());
-                        header.setType((byte) ProtocolMessageTypeEnum.REQUEST.getKey());
-                        header.setRequestId(IdUtil.getSnowflakeNextId());
+            netClient.connect(selectServiceMetaInfo.getServicePort(), selectServiceMetaInfo.getServiceHost(),
+                    result -> {
+                        if (result.succeeded()) {
+                            System.out.println("Connected to TCP server!");
+                            NetSocket socket = result.result();
+                            // 发送数据
+                            // 构造消息
+                            ProtocolMessage<Object> protocolMessage = new ProtocolMessage<>();
+                            ProtocolMessage.Header header = new ProtocolMessage.Header();
+                            header.setMagic(ProtocolConstant.PROTOCOL_MAGIC);
+                            header.setVersion(ProtocolConstant.PROTOCOL_VERSION);
+                            header.setSerializer((byte) ProtocolMessageSerializerEnum.getEnumByValue(rpcConfig.getSerializer()).getKey());
+                            header.setType((byte) ProtocolMessageTypeEnum.REQUEST.getKey());
+                            header.setRequestId(IdUtil.getSnowflakeNextId());
 
-                        protocolMessage.setHeader(header);
-                        protocolMessage.setBody(rpcRequest);
+                            protocolMessage.setHeader(header);
+                            protocolMessage.setBody(rpcRequest);
 
-                        // 编码请求
-                        try {
-                            Buffer encode = ProtocolMessageEncoder.encode(protocolMessage);
-                            socket.write(encode);
-                        } catch (Exception e) {
-                            throw new RuntimeException("协议消息编码失败！ exception ："+ e);
-                        }
-
-                        // 接收响应
-                        socket.handler(buffer -> {
+                            // 编码请求
                             try {
-                                ProtocolMessage<RpcResponse> decode = (ProtocolMessage<RpcResponse>) ProtocolMessageDecoder.decode(buffer);
-                                responseFuture.complete(decode.getBody());
+                                Buffer encode = ProtocolMessageEncoder.encode(protocolMessage);
+                                socket.write(encode);
                             } catch (Exception e) {
-                                throw new RuntimeException("协议消息解码失败！ exception ："+ e);
+                                throw new RuntimeException("协议消息编码失败！ exception ：" + e);
                             }
-                        });
-                    }else{
-                        System.out.println("Failed to connect to TCP server!");
-                    }
-            });
+
+                            // 接收响应
+                            socket.handler(buffer -> {
+                                try {
+                                    ProtocolMessage<RpcResponse> decode = (ProtocolMessage<RpcResponse>) ProtocolMessageDecoder.decode(buffer);
+                                    responseFuture.complete(decode.getBody());
+                                } catch (Exception e) {
+                                    throw new RuntimeException("协议消息解码失败！ exception ：" + e);
+                                }
+                            });
+                        } else {
+                            System.out.println("Failed to connect to TCP server!");
+                        }
+                    });
 
             RpcResponse rpcResponse = responseFuture.get();
             // 关闭链接
             netClient.close();
-            return rpcResponse;
+            return rpcResponse.getData();
 
         } catch (IOException e) {
             e.printStackTrace();
