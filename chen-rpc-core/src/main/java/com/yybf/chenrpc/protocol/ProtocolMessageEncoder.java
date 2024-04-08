@@ -23,6 +23,8 @@ public class ProtocolMessageEncoder {
      * @return io.vertx.core.buffer.Buffer:
      */
     public static Buffer encode(ProtocolMessage<?> protocolMessage) throws Exception{
+
+        System.out.println("Encoding... message :" + protocolMessage);
         // 如果 消息本身 或者 消息的消息头 为空
         if(protocolMessage == null || protocolMessage.getHeader() == null){
             return Buffer.buffer();

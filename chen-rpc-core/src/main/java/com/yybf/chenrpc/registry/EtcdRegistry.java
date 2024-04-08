@@ -106,6 +106,7 @@ public class EtcdRegistry implements Registry {
 
     @Override
     public List<ServiceMetaInfo> serviceDiscovery(String serviceKey) {
+        System.out.println("EtcdRegistry --> serviceKey：" + serviceKey);
         // 优先从缓存中获取服务
         List<ServiceMetaInfo> cachedServiceMetaInfoList = registryServiceCache.readCache();
         if(cachedServiceMetaInfoList != null ){

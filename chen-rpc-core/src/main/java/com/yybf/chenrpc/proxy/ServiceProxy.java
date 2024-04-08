@@ -60,14 +60,13 @@ public class ServiceProxy implements InvocationHandler {
         String serviceName = method.getDeclaringClass().getName();
         RpcRequest rpcRequest = RpcRequest.builder()
                 .serviceName(serviceName)
+                .serviceVersion(RpcConstant.DEFAULT_SERVICE_VERSION)
                 .methodName(method.getName())
                 .parameterTypes(method.getParameterTypes())
                 .args(args)
                 .build();
 
         try {
-            // 将请求序列化
-            byte[] bodyBytes = serializer.serializer(rpcRequest);
             // 发送请求
             /* 通过使用注册中心和服务发现机制来发送请求 */
             // 获取指定的注册中心实例
@@ -86,7 +85,12 @@ public class ServiceProxy implements InvocationHandler {
             // todo 暂时先取第一个mateInfo
             ServiceMetaInfo selectedServiceMetaInfo = serviceMetaInfoList.get(0);
 
+            // 发送TCP请求
             RpcResponse rpcResponse = VertxTcpClient.doRequest(rpcRequest, selectedServiceMetaInfo);
+
+            System.out.println("Response：" + rpcResponse);
+
+            return rpcResponse.getData();
             /*// 发送Tcp请求
             Vertx vertx = Vertx.vertx();
             NetClient netClient = vertx.createNetClient();
@@ -136,8 +140,7 @@ public class ServiceProxy implements InvocationHandler {
             // 关闭链接
             netClient.close();
             return rpcResponse.getData();*/
-
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return null;

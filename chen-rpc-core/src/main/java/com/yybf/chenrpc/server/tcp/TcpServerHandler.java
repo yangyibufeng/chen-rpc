@@ -10,6 +10,7 @@ import com.yybf.chenrpc.registry.LocalRegistry;
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.net.NetSocket;
+import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Method;
 
@@ -19,9 +20,13 @@ import java.lang.reflect.Method;
  * @author yangyibufeng
  * @date 2024/3/12
  */
+@Slf4j
 public class TcpServerHandler implements Handler<NetSocket> {
     @Override
     public void handle(NetSocket netSocket) {
+
+        System.out.println("inter TcpServerHandler");
+
         // 处理连接 （使用自己封装的处理器）
         TcpBufferHandleWrapper bufferHandleWrapper = new TcpBufferHandleWrapper(buffer -> {
             // 接受请求并解码
@@ -52,6 +57,7 @@ public class TcpServerHandler implements Handler<NetSocket> {
                 rpcResponse.setData(result);
                 rpcResponse.setDataType(method.getReturnType());
                 rpcResponse.setMessage("OK");
+                System.out.println("TCPServerHandler --> rpcResponse:" + rpcResponse);
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -74,6 +80,8 @@ public class TcpServerHandler implements Handler<NetSocket> {
 
         });
 
+        // 将发送逻辑更改为自己定义的装饰类，防止粘包半包的情况出现
+        netSocket.handler(bufferHandleWrapper);
     }
 
 }

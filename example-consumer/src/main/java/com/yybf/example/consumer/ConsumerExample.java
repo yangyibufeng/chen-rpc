@@ -10,14 +10,21 @@ import com.yybf.example.common.service.UserService;
  * 扩展RPC后示例消费者类，测试配置文件的读取
  *
  * @author yangyibufeng
- * @date 2024/3/15
+ * @date 2024/4/8
  */
 public class ConsumerExample {
     public static void main(String[] args) {
-        testConsumer();
-        int time = 10;
-        while(time -- > 0 ){
-        }
+        // 获取代理
+        UserService userService = ServiceProxyFactory.getProxy(UserService.class);
+        User user = new User();
+        user.setName("yybf");
+        System.out.println("1end!!!");
+
+        User newUser = userService.getUser(user);
+        System.out.println("2end!!!");
+        System.out.println("newUser ：" + newUser);
+        System.out.println("name:" + newUser.getName());
+        System.out.println("3end!!!");
     }
 
     public static void testConsumer(){

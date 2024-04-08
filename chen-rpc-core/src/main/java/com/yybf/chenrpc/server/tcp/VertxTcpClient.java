@@ -23,6 +23,7 @@ import java.util.concurrent.ExecutionException;
 public class VertxTcpClient {
     /**
      * 真正的客户端处理逻辑（使用的是ServiceProxy中的处理逻辑）
+     * 发送请求
      *
      * @param rpcRequest:
      * @param serviceMetaInfo:
@@ -36,44 +37,53 @@ public class VertxTcpClient {
         NetClient netClient = vertx.createNetClient();
         // 使异步式的vertx通过阻塞变为同步
         CompletableFuture<RpcResponse> responseFuture = new CompletableFuture<>();
+
         netClient.connect(serviceMetaInfo.getServicePort(), serviceMetaInfo.getServiceHost(),
                 result -> {
-                    if (result.succeeded()) {
-                        System.out.println("Connected to TCP server!");
-                        NetSocket socket = result.result();
-                        // 发送数据
-                        // 构造消息
-                        ProtocolMessage<Object> protocolMessage = new ProtocolMessage<>();
-                        ProtocolMessage.Header header = new ProtocolMessage.Header();
-                        header.setMagic(ProtocolConstant.PROTOCOL_MAGIC);
-                        header.setVersion(ProtocolConstant.PROTOCOL_VERSION);
-                        header.setSerializer((byte) ProtocolMessageSerializerEnum.getEnumByValue(RpcApplication.getRpcConfig().getSerializer()).getKey());
-                        header.setType((byte) ProtocolMessageTypeEnum.REQUEST.getKey());
-                        // 生成全局请求ID
-                        header.setRequestId(IdUtil.getSnowflakeNextId());
-                        protocolMessage.setHeader(header);
-                        protocolMessage.setBody(rpcRequest);
-
-                        // 编码请求
-                        try {
-                            Buffer encode = ProtocolMessageEncoder.encode(protocolMessage);
-                            socket.write(encode);
-                        } catch (Exception e) {
-                            throw new RuntimeException("协议消息编码失败！ exception ：" + e);
-                        }
-
-                        // 接收响应
-                        socket.handler(buffer -> {
-                            try {
-                                ProtocolMessage<RpcResponse> decode = (ProtocolMessage<RpcResponse>) ProtocolMessageDecoder.decode(buffer);
-                                responseFuture.complete(decode.getBody());
-                            } catch (Exception e) {
-                                throw new RuntimeException("协议消息解码失败！ exception ：" + e);
-                            }
-                        });
-                    } else {
-                        System.out.println("Failed to connect to TCP server!");
+                    if (!result.succeeded()) {
+                        System.err.println("Failed to connect to TCP server!");
+                        return;
                     }
+
+                    System.out.println("Connected to TCP server!");
+                    // socket代表了与服务端建立的 TCP 连接的套接字，作用是与服务端进行 TCP 连接并进行数据交换
+                    NetSocket socket = result.result();
+                    // 发送数据
+                    // 构造消息
+                    ProtocolMessage<RpcRequest> protocolMessage = new ProtocolMessage<>();
+                    ProtocolMessage.Header header = new ProtocolMessage.Header();
+                    header.setMagic(ProtocolConstant.PROTOCOL_MAGIC);
+                    header.setVersion(ProtocolConstant.PROTOCOL_VERSION);
+                    header.setSerializer((byte) ProtocolMessageSerializerEnum
+                            .getEnumByValue(RpcApplication.getRpcConfig().getSerializer()).getKey());
+                    header.setType((byte) ProtocolMessageTypeEnum.REQUEST.getKey());
+                    // 生成全局请求ID
+                    header.setRequestId(IdUtil.getSnowflakeNextId());
+                    protocolMessage.setHeader(header);
+                    protocolMessage.setBody(rpcRequest);
+
+                    // 编码请求
+                    try {
+                        Buffer encodeBuffer = ProtocolMessageEncoder.encode(protocolMessage);
+                        socket.write(encodeBuffer);
+                    } catch (Exception e) {
+                        throw new RuntimeException("协议消息编码失败！ exception ：" + e);
+                    }
+
+                    // 接收响应
+                    TcpBufferHandleWrapper tcpBufferHandleWrapper = new TcpBufferHandleWrapper(
+                            buffer -> {
+                                try {
+                                    ProtocolMessage<RpcResponse> rpcResponseProtocolMessage =
+                                            (ProtocolMessage<RpcResponse>) ProtocolMessageDecoder.decode(buffer);
+                                    responseFuture.complete(rpcResponseProtocolMessage.getBody());
+                                } catch (Exception e) {
+                                    throw new RuntimeException(e);
+                                }
+                            });
+
+                    // 将响应处理器装配到socket中
+                    socket.handler(tcpBufferHandleWrapper);
                 });
 
         RpcResponse rpcResponse = responseFuture.get();
