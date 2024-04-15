@@ -5,6 +5,8 @@ import cn.hutool.core.util.IdUtil;
 import com.yybf.chenrpc.RpcApplication;
 import com.yybf.chenrpc.config.RpcConfig;
 import com.yybf.chenrpc.constant.RpcConstant;
+import com.yybf.chenrpc.loadbalancer.LoadBalancer;
+import com.yybf.chenrpc.loadbalancer.LoadBalancerFactory;
 import com.yybf.chenrpc.model.RpcRequest;
 import com.yybf.chenrpc.model.RpcResponse;
 import com.yybf.chenrpc.model.ServiceMetaInfo;
@@ -18,11 +20,14 @@ import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.net.NetClient;
 import io.vertx.core.net.NetSocket;
+import org.objenesis.ObjenesisException;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -68,7 +73,7 @@ public class ServiceProxy implements InvocationHandler {
 
         try {
             // 发送请求
-            /* 通过使用注册中心和服务发现机制来发送请求 */
+            /* 通过使用 注册中心 和 服务发现（SPI）机制 来发送请求 */
             // 获取指定的注册中心实例
             Registry registry = RegistryFactory.getInstance(rpcConfig.getRegistryConfig().getRegistry());
             // 开始构建服务信息用于查找对应的服务
@@ -82,8 +87,12 @@ public class ServiceProxy implements InvocationHandler {
                 throw new RuntimeException("暂无对应服务地址!");
             }
 
-            // todo 暂时先取第一个mateInfo
-            ServiceMetaInfo selectedServiceMetaInfo = serviceMetaInfoList.get(0);
+            // 通过使用指定的负载均衡器实现负载均衡
+            LoadBalancer loadBalancer = LoadBalancerFactory.getInstance(rpcConfig.getLoadBalancer());
+            // 将调用的 方法名 作为负载均衡参数
+            Map<String, Object> requestParams = new HashMap<>();
+            requestParams.put("methodName",rpcRequest.getMethodName());
+            ServiceMetaInfo selectedServiceMetaInfo = loadBalancer.select(requestParams,serviceMetaInfoList);
 
             // 发送TCP请求
             RpcResponse rpcResponse = VertxTcpClient.doRequest(rpcRequest, selectedServiceMetaInfo);

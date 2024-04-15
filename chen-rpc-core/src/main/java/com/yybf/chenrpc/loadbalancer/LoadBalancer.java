@@ -16,7 +16,7 @@ public interface LoadBalancer {
      * 选择服务调用
      * 将请求参数和可用服务列表传入，该方法通过特定的负载均衡方法，选择一个合适的服务进行请求
      *
-     * @param requestParams: 请求参数
+     * @param requestParams: 请求参数 （当前仅在consistentHash里面用来计算请求的hash值）
      * @param serviceMetaInfoList: 可用的服务列表
      * @return com.yybf.chenrpc.model.ServiceMetaInfo:
      * @author yangyibufeng
