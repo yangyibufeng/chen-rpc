@@ -41,7 +41,7 @@ public interface Registry {
      * @author yangyibufeng
      * @date 2024/3/20 18:26
      */
-    void unRegister(ServiceMetaInfo serviceMetaInfo);
+    void unRegister(ServiceMetaInfo serviceMetaInfo) throws Exception;
 
     /**
      * 服务发现（获取某服务的所有节点，消费端）

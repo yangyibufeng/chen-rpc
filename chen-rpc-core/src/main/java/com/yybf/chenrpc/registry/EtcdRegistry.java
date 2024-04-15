@@ -92,13 +92,13 @@ public class EtcdRegistry implements Registry {
     }
 
     @Override
-    public void unRegister(ServiceMetaInfo serviceMetaInfo) {
+    public void unRegister(ServiceMetaInfo serviceMetaInfo) throws Exception{
         String registerKey = ETCD_ROOT_PATH + serviceMetaInfo.getServiceNodeKey();
         kvClient.delete(
                 ByteSequence.from(
                         registerKey
                         , StandardCharsets.UTF_8)
-        );
+        ).get();
 
         // 注销时要将节点从本地缓存中删除
         localRegisterNodeKeySet.remove(registerKey);

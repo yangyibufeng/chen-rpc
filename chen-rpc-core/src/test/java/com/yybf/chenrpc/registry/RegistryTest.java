@@ -50,7 +50,7 @@ public class RegistryTest {
     }
 
     @Test
-    public void UnRegister() {
+    public void UnRegister() throws Exception {
         ServiceMetaInfo serviceMetaInfo = new ServiceMetaInfo();
         serviceMetaInfo.setServiceName("chenService");
         serviceMetaInfo.setServiceVersion("1.0.1");
