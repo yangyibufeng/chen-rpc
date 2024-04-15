@@ -1,4 +1,4 @@
-package com.yybf.chenrpc.loadbalance;
+package com.yybf.chenrpc.loadbalancer;
 
 import com.yybf.chenrpc.model.ServiceMetaInfo;
 

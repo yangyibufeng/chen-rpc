@@ -1,10 +1,9 @@
-package com.yybf.chenrpc.loadbalance;
+package com.yybf.chenrpc.loadbalancer;
 
 import com.yybf.chenrpc.model.ServiceMetaInfo;
 
 import java.util.List;
 import java.util.Map;
-import java.util.ServiceConfigurationError;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**

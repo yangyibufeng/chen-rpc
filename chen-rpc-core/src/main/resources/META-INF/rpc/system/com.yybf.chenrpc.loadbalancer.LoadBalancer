@@ -1,0 +1,3 @@
+roundRobin=com.yybf.chenrpc.loadbalancer.RoundRobinLoadBalancer
+random=com.yybf.chenrpc.loadbalancer.RandomLoadBalancer
+consistentHash=com.yybf.chenrpc.loadbalancer.ConsistentHashLoadBalancer

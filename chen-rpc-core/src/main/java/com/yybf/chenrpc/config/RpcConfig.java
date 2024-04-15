@@ -1,5 +1,6 @@
 package com.yybf.chenrpc.config;
 
+import com.yybf.chenrpc.loadbalancer.LoadBalancerKeys;
 import com.yybf.chenrpc.serializer.SerializerKeys;
 import lombok.Data;
 
@@ -41,6 +42,11 @@ public class RpcConfig {
      * 指定序列化器
      */
     private String serializer = SerializerKeys.JDK;
+
+    /**
+     * 指定负载均衡器
+     */
+    private String loadBalancer = LoadBalancerKeys.ROUND_ROBIN;
 
     /**
      * 注册中心配置
