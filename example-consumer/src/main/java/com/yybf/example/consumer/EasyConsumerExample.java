@@ -11,7 +11,7 @@ import com.yybf.example.common.service.UserService;
  * @date 2024/3/11
  */
 public class EasyConsumerExample {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
         // todo 需要获取UserService的实现类对象
         // 调用静态代理
 //        UserService userService = new UserServiceProxy();
@@ -19,6 +19,7 @@ public class EasyConsumerExample {
         UserService userService = ServiceProxyFactory.getProxy(UserService.class);
         User user = new User();
         user.setName("yybf");
+
         // 调用
         User newUser = userService.getUser(user);
         if (newUser != null) {

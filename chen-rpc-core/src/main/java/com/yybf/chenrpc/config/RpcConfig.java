@@ -1,5 +1,7 @@
 package com.yybf.chenrpc.config;
 
+import cn.hutool.db.handler.StringHandler;
+import com.yybf.chenrpc.fault.retry.RetryStrategyKeys;
 import com.yybf.chenrpc.loadbalancer.LoadBalancerKeys;
 import com.yybf.chenrpc.serializer.SerializerKeys;
 import lombok.Data;
@@ -39,14 +41,19 @@ public class RpcConfig {
     private boolean mock = false;
 
     /**
-     * 指定序列化器
+     * 指定序列化器（默认JDK）
      */
     private String serializer = SerializerKeys.JDK;
 
     /**
-     * 指定负载均衡器
+     * 指定负载均衡器（默认轮询）
      */
     private String loadBalancer = LoadBalancerKeys.ROUND_ROBIN;
+
+    /**
+     * 指定重试策略（默认不重试）
+     */
+    private String retryStrategy = RetryStrategyKeys.NO;
 
     /**
      * 注册中心配置

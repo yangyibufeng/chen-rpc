@@ -1,34 +1,27 @@
 package com.yybf.chenrpc.proxy;
 
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.util.IdUtil;
 import com.yybf.chenrpc.RpcApplication;
 import com.yybf.chenrpc.config.RpcConfig;
 import com.yybf.chenrpc.constant.RpcConstant;
+import com.yybf.chenrpc.fault.retry.RetryStrategy;
+import com.yybf.chenrpc.fault.retry.RetryStrategyFactory;
 import com.yybf.chenrpc.loadbalancer.LoadBalancer;
 import com.yybf.chenrpc.loadbalancer.LoadBalancerFactory;
 import com.yybf.chenrpc.model.RpcRequest;
 import com.yybf.chenrpc.model.RpcResponse;
 import com.yybf.chenrpc.model.ServiceMetaInfo;
-import com.yybf.chenrpc.protocol.*;
 import com.yybf.chenrpc.registry.Registry;
 import com.yybf.chenrpc.registry.RegistryFactory;
 import com.yybf.chenrpc.serializer.Serializer;
 import com.yybf.chenrpc.serializer.SerializerFactory;
 import com.yybf.chenrpc.server.tcp.VertxTcpClient;
-import io.vertx.core.Vertx;
-import io.vertx.core.buffer.Buffer;
-import io.vertx.core.net.NetClient;
-import io.vertx.core.net.NetSocket;
-import org.objenesis.ObjenesisException;
 
-import java.io.IOException;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 
 /**
  * 动态服务代理（JDK动态代理）
@@ -91,11 +84,16 @@ public class ServiceProxy implements InvocationHandler {
             LoadBalancer loadBalancer = LoadBalancerFactory.getInstance(rpcConfig.getLoadBalancer());
             // 将调用的 方法名 作为负载均衡参数
             Map<String, Object> requestParams = new HashMap<>();
-            requestParams.put("methodName",rpcRequest.getMethodName());
-            ServiceMetaInfo selectedServiceMetaInfo = loadBalancer.select(requestParams,serviceMetaInfoList);
+            requestParams.put("methodName", rpcRequest.getMethodName());
+            ServiceMetaInfo selectedServiceMetaInfo = loadBalancer.select(requestParams, serviceMetaInfoList);
 
             // 发送TCP请求
-            RpcResponse rpcResponse = VertxTcpClient.doRequest(rpcRequest, selectedServiceMetaInfo);
+            // RpcResponse rpcResponse = VertxTcpClient.doRequest(rpcRequest, selectedServiceMetaInfo);
+            // 使用重试机制
+            RetryStrategy retryStrategy = RetryStrategyFactory.getInstance(rpcConfig.getRetryStrategy());
+            RpcResponse rpcResponse = retryStrategy.doRetry(() ->
+                    VertxTcpClient.doRequest(rpcRequest, selectedServiceMetaInfo)
+            );
 
             System.out.println("Response：" + rpcResponse);
 

@@ -1,0 +1,2 @@
+no=com.yybf.chenrpc.fault.retry.NoRetryStrategy
+fixedInterval=com.yybf.chenrpc.fault.retry.FixedIntervalRetryStrategy
