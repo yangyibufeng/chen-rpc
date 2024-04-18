@@ -13,7 +13,7 @@ import com.yybf.example.common.service.UserService;
  * @date 2024/4/8
  */
 public class ConsumerExample {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
         // 获取代理
         UserService userService = ServiceProxyFactory.getProxy(UserService.class);
         User user = new User();

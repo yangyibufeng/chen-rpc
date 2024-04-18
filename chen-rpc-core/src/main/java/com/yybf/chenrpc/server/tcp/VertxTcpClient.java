@@ -148,8 +148,12 @@ public class VertxTcpClient {
         });
     }
 
+    public static RpcResponse testTolerantStrategy(RpcRequest rpcRequest, ServiceMetaInfo serviceMetaInfo){
+        throw new RuntimeException("fuck you vert.x");
+    }
+
     public static void main(String[] args) {
 //        new VertxTcpClient().start();
-        new VertxTcpClient().testTCPClient();
+//        new VertxTcpClient().testTCPClient();
     }
 }

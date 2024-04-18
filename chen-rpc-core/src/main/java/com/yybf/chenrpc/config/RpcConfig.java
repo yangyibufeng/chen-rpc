@@ -2,6 +2,8 @@ package com.yybf.chenrpc.config;
 
 import cn.hutool.db.handler.StringHandler;
 import com.yybf.chenrpc.fault.retry.RetryStrategyKeys;
+import com.yybf.chenrpc.fault.tolerant.TolerantStrategy;
+import com.yybf.chenrpc.fault.tolerant.TolerantStrategyKeys;
 import com.yybf.chenrpc.loadbalancer.LoadBalancerKeys;
 import com.yybf.chenrpc.serializer.SerializerKeys;
 import lombok.Data;
@@ -54,6 +56,11 @@ public class RpcConfig {
      * 指定重试策略（默认不重试）
      */
     private String retryStrategy = RetryStrategyKeys.NO;
+
+    /**
+     * 指定重试策略（默认静默）
+     */
+    private String tolerantStrategy = TolerantStrategyKeys.FAIL_SAFE;
 
     /**
      * 注册中心配置

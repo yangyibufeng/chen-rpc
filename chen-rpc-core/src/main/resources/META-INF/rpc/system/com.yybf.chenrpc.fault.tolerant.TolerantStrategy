@@ -1,0 +1,4 @@
+failBack=com.yybf.chenrpc.fault.tolerant.FailBackTolerantStrategy
+failFast=com.yybf.chenrpc.fault.tolerant.FailFastTolerantStrategy
+failOver=com.yybf.chenrpc.fault.tolerant.FailOverTolerantStrategy
+failSafe=com.yybf.chenrpc.fault.tolerant.FailSafeTolerantStrategy

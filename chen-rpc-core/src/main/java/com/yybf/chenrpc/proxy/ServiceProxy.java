@@ -6,6 +6,8 @@ import com.yybf.chenrpc.config.RpcConfig;
 import com.yybf.chenrpc.constant.RpcConstant;
 import com.yybf.chenrpc.fault.retry.RetryStrategy;
 import com.yybf.chenrpc.fault.retry.RetryStrategyFactory;
+import com.yybf.chenrpc.fault.tolerant.TolerantStrategy;
+import com.yybf.chenrpc.fault.tolerant.TolerantStrategyFactory;
 import com.yybf.chenrpc.loadbalancer.LoadBalancer;
 import com.yybf.chenrpc.loadbalancer.LoadBalancerFactory;
 import com.yybf.chenrpc.model.RpcRequest;
@@ -90,10 +92,21 @@ public class ServiceProxy implements InvocationHandler {
             // 发送TCP请求
             // RpcResponse rpcResponse = VertxTcpClient.doRequest(rpcRequest, selectedServiceMetaInfo);
             // 使用重试机制
-            RetryStrategy retryStrategy = RetryStrategyFactory.getInstance(rpcConfig.getRetryStrategy());
-            RpcResponse rpcResponse = retryStrategy.doRetry(() ->
-                    VertxTcpClient.doRequest(rpcRequest, selectedServiceMetaInfo)
-            );
+            RpcResponse rpcResponse = null;
+            Map<String, Object> map = new HashMap<>();
+            map.put("rpcRequest", rpcRequest);
+            map.put("selectedServiceMetaInfo", selectedServiceMetaInfo);
+            try {
+                RetryStrategy retryStrategy = RetryStrategyFactory.getInstance(rpcConfig.getRetryStrategy());
+                rpcResponse = retryStrategy.doRetry(() ->
+                        VertxTcpClient.doRequest(rpcRequest, selectedServiceMetaInfo)
+                );
+//                throw new RuntimeException("fuck you vert.x"); 测试容错机制
+            } catch (Exception e) {
+                // 使用容错机制
+                TolerantStrategy tolerantStrategy = TolerantStrategyFactory.getInstance(rpcConfig.getTolerantStrategy());
+                tolerantStrategy.doTolerant(map, e);
+            }
 
             System.out.println("Response：" + rpcResponse);
 
