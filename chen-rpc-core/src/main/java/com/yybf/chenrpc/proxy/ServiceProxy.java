@@ -18,6 +18,7 @@ import com.yybf.chenrpc.registry.RegistryFactory;
 import com.yybf.chenrpc.serializer.Serializer;
 import com.yybf.chenrpc.serializer.SerializerFactory;
 import com.yybf.chenrpc.server.tcp.VertxTcpClient;
+import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -32,6 +33,7 @@ import java.util.Map;
  * @author yangyibufeng
  * @date 2024/3/13
  */
+@Slf4j
 public class ServiceProxy implements InvocationHandler {
 
     /**
@@ -79,7 +81,7 @@ public class ServiceProxy implements InvocationHandler {
             List<ServiceMetaInfo> serviceMetaInfoList = registry.serviceDiscovery(serviceMetaInfo.getServiceKey());
             // 如果未获取到值
             if (CollUtil.isEmpty(serviceMetaInfoList)) {
-                throw new RuntimeException("暂无对应服务地址!");
+                throw new RuntimeException("暂无对应服务地址! " + serviceMetaInfo);
             }
 
             // 通过使用指定的负载均衡器实现负载均衡

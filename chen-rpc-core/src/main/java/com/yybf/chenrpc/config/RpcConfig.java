@@ -35,7 +35,7 @@ public class RpcConfig {
     /**
      * 服务器端口号
      */
-    private Integer serverPort = 8080;
+    private Integer serverPort = 18080;
 
     /**
      * 是否开启模拟调用
