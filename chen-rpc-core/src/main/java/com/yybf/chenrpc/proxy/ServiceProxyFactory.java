@@ -23,7 +23,7 @@ public class ServiceProxyFactory {
      * @date 2024/3/13 16:14
      */
     public static <T> T getProxy(Class<T> serviceClass) {
-        log.warn("这里传入的是" + serviceClass);
+        // log.warn("这里传入的是" + serviceClass);
         // 从配置文件中读取是否启用Mock代理
         if (RpcApplication.getRpcConfig().isMock()) {
             return getMockProxy(serviceClass);

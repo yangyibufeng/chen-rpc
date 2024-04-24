@@ -38,14 +38,14 @@ public class RpcConsumerBootStrap implements BeanPostProcessor {
             RpcReference rpcReference = field.getAnnotation(RpcReference.class);
 
             if (rpcReference != null) {
-                log.info("开始注入 " + field);
+                // log.info("开始注入 " + field);
                 // 为属性生成代理对象
                 Class<?> interfaceClass = rpcReference.interfaceClass();
                 if (interfaceClass == void.class) {
                     interfaceClass = field.getType();
-                    log.error("类型：" + field.getType());
+                    // log.error("类型：" + field.getType());
                 }
-                log.error("生成的对象：" + interfaceClass);
+                // log.error("生成的对象：" + interfaceClass);
 
                 // 将属性设置为可访问，以便后续设置代理对象。
                 field.setAccessible(true);

@@ -1,15 +1,6 @@
 package com.yybf.chenrpc.bootstrap;
 
 import com.yybf.chenrpc.RpcApplication;
-import com.yybf.chenrpc.config.RegistryConfig;
-import com.yybf.chenrpc.config.RpcConfig;
-import com.yybf.chenrpc.model.ServiceMetaInfo;
-import com.yybf.chenrpc.registry.LocalRegistry;
-import com.yybf.chenrpc.registry.Registry;
-import com.yybf.chenrpc.registry.RegistryFactory;
-import com.yybf.chenrpc.server.tcp.VertxTcpServer;
-
-import java.util.List;
 
 /**
  * 服务消费者的启动类
