@@ -97,17 +97,21 @@ public class ServiceProxy implements InvocationHandler {
             RpcResponse rpcResponse = null;
             Map<String, Object> map = new HashMap<>();
             map.put("rpcRequest", rpcRequest);
-            map.put("selectedServiceMetaInfo", selectedServiceMetaInfo);
+            map.put("loadBalancer",loadBalancer);
+            RetryStrategy retryStrategy = RetryStrategyFactory.getInstance(rpcConfig.getRetryStrategy());
             try {
-                RetryStrategy retryStrategy = RetryStrategyFactory.getInstance(rpcConfig.getRetryStrategy());
                 rpcResponse = retryStrategy.doRetry(() ->
-                        VertxTcpClient.doRequest(rpcRequest, selectedServiceMetaInfo)
+                        VertxTcpClient.doRequest(rpcRequest, selectedServiceMetaInfo) /*这里发送请求*/
                 );
 //                throw new RuntimeException("fuck you vert.x"); 测试容错机制
             } catch (Exception e) {
                 // 使用容错机制
                 TolerantStrategy tolerantStrategy = TolerantStrategyFactory.getInstance(rpcConfig.getTolerantStrategy());
-                tolerantStrategy.doTolerant(map, e);
+                serviceMetaInfoList.remove(selectedServiceMetaInfo);
+                map.put("serviceMetaInfoList", serviceMetaInfoList);
+                map.put("requestParams",requestParams);
+                map.put("retryStrategy",retryStrategy);
+                rpcResponse = tolerantStrategy.doTolerant(map, e);
             }
 
             System.out.println("Response：" + rpcResponse);
